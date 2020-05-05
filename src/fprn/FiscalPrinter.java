@@ -49,7 +49,25 @@ public class FiscalPrinter {
         sendInts(sum);
         sendInt(3);
         Thread.sleep(sleepingTime);
+        byte[] output = this.readPackage();
+        if (output==null || (output.length==1 && output[0]==(byte)21)){
+            return false;
+        }else{
+            return true;
+        }
     }
+
+    public void sendCommand(int cmd, int[] data) throws Exception{
+        byte seq = SequenceGenerator.getNewSeq();
+        int i=0;
+        while (i<5 && !this.sendCommand(cmd,data)){
+            i++;
+        }
+        if (i==5){
+            throw new Exception("Printer not working");
+        }
+    }
+
     public void printBytes(int[] bytes){
         for (int i=0;i<bytes.length;i++){
             System.out.print(bytes[i]+" ");
@@ -153,7 +171,7 @@ public class FiscalPrinter {
     }
     
     public void print(FiscalAccount fiscalAccount) throws Exception{
-        sendPackage(SequenceGenerator.getNewSeq(),48, getInts("1,0000,1"));
+        sendCommand(48, getInts("1,0000,1"));
         char vat=(char)((int)193);
 
         Iterator it = fiscalAccount.getProducts().iterator();
@@ -171,10 +189,10 @@ public class FiscalPrinter {
             
             String price = product.getPrice().toString();
             double qty = productOnAccount.getQty();
-            sendPackage(SequenceGenerator.getNewSeq(),49, getInts(name+"\t"+vat+""+price+"*"+qty));
+            sendCommand(49, getInts(name+"\t"+vat+""+price+"*"+qty));
         }
-        sendPackage((SequenceGenerator.getNewSeq()),53, getInts("\t"));
-        sendPackage((SequenceGenerator.getNewSeq()),56, getInts(""));
+        sendCommand(53, getInts("\t"));
+        sendCommand(56, getInts(""));
     }
     
     public void closeFiscal(byte seq) throws Exception{
@@ -202,14 +220,14 @@ public class FiscalPrinter {
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
         String fromDate = sdf.format(dateFrom);
         String toDate = sdf.format(dateTo);
-        sendPackage(seq,94,getInts(fromDate+","+toDate));
+        sendCommand(94,getInts(fromDate+","+toDate));
     }
 
     public void shortReportInPeriod(byte seq, Date dateFrom, Date dateTo) throws Exception{
         SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
         String fromDate = sdf.format(dateFrom);
         String toDate = sdf.format(dateTo);
-        sendPackage(seq,95,getInts(fromDate+","+toDate));
+        sendCommand(95,getInts(fromDate+","+toDate));
     }
     
 }
