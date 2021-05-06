@@ -60,7 +60,7 @@ public class FiscalPrinter {
     public void sendCommand(int cmd, int[] data) throws Exception{
         byte seq = SequenceGenerator.getNewSeq();
         int i=0;
-        while (i<5 && !this.sendCommand(cmd,data)){
+        while (i<5 && !this.sendPackage(seq, cmd, data)){
             i++;
         }
         if (i==5){
